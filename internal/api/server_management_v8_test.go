@@ -19,6 +19,11 @@ import (
 
 func TestManagementV8RoutesShareAccessControl(t *testing.T) {
 	gin.SetMode(gin.TestMode)
+	for _, key := range []string{"ENDPOINT", "DATABASE", "USERNAME", "PASSWORD"} {
+		t.Setenv("CLICKHOUSE_QUOTA_"+key, "")
+	}
+	clickhouse := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {}))
+	defer clickhouse.Close()
 	for _, tc := range []struct {
 		name                      string
 		enabled, home, authorized bool
@@ -40,14 +45,19 @@ func TestManagementV8RoutesShareAccessControl(t *testing.T) {
 			}
 			cfg.Home.Enabled = tc.home
 			cfg.Plugins.Dir = filepath.Dir(path)
+			cfg.QuotaClickHouse = config.QuotaClickHouseConfig{Endpoint: clickhouse.URL, Database: "test"}
 			h := management.NewHandler(cfg, path, nil)
 			h.SetLocalPassword("test-password")
 			s := &Server{cfg: cfg, engine: gin.New(), mgmt: h}
 			s.managementRoutesEnabled.Store(tc.enabled)
 			s.registerManagementRoutes()
-			for _, route := range []string{"/v0/management/config", "/v8/management/config", "/v0/management/plugins", "/v8/management/plugins"} {
+			for _, route := range []string{"/v0/management/config", "/v8/management/config", "/v0/management/plugins", "/v8/management/plugins", "/v8/management/observability/quota/history", "/v8/management/observability/quota/pools"} {
 				req := httptest.NewRequest(http.MethodGet, route, nil)
 				req.RemoteAddr = "127.0.0.1:1234"
+				if strings.Contains(route, "/observability/quota/") {
+					// Use the other loopback identity to avoid testing the five-attempt IP ban here.
+					req.RemoteAddr = "[::1]:1234"
+				}
 				if tc.authorized {
 					req.Header.Set("Authorization", "Bearer test-password")
 				}

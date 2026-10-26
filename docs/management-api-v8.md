@@ -98,6 +98,8 @@ retain the corresponding business operation's fields.
 | `/observability/logs/requests/<id>` | GET | Get a request log. |
 | `/observability/usage/api-keys` | GET | Get API-key usage. |
 | `/observability/usage/queue` | GET | Get queued usage events. |
+| `/observability/quota/history` | GET | Read ClickHouse-backed account quota samples; see [quota statistics](quota-statistics.md). |
+| `/observability/quota/pools` | GET | Read provider balances, burn/drain rates and reset-aware projections; see [quota statistics](quota-statistics.md). |
 | `/credentials` | GET, POST, DELETE | List, upload, or delete credential files. |
 | `/credentials/models` | GET | Get credential models. |
 | `/credentials/download` | GET | Download a credential file. |
