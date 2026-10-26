@@ -1185,6 +1185,15 @@ observability:
     # Default: 60. Max: 3600.
     redis-usage-queue-retention-seconds: 60
 
+  # Optional quota history, independent of token usage. See docs/quota-statistics.md.
+  # Apply internal/quotastats/schema.sql yourself before enabling; no automatic DDL.
+  quota:
+    clickhouse:
+      endpoint: "" # HTTP(S) endpoint; empty disables storage
+      database: ""
+      username: ""
+      password: "" # Prefer CLICKHOUSE_QUOTA_PASSWORD in the environment
+
   # Enable pprof HTTP debug server (host:port). Keep it bound to localhost for safety.
   pprof:
     enable: false

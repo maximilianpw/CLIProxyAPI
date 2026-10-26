@@ -295,6 +295,9 @@ func (h *Handler) fetchQuotaForPlugin(c *gin.Context, pluginID, authIndex string
 		c.JSON(http.StatusBadGateway, gin.H{"error": fmt.Sprintf("failed to fetch quota: %v", errFetch)})
 		return
 	}
+	if c.GetBool(ConfigV8ContextKey) {
+		h.recordQuotaSample(c, auth.Provider, auth.Index, quotaResp)
+	}
 	c.JSON(http.StatusOK, quotaResp)
 }
 
